@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -35,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private Button mOffBtn;
     private Button mListPairedDevicesBtn;
     private Button mDiscoverBtn;
+    private Button mSendMsg;
+    private EditText msgText;
     private BluetoothAdapter mBTAdapter;
     private Set<BluetoothDevice> mPairedDevices;
     private ArrayAdapter<String> mBTArrayAdapter;
@@ -64,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
         mOffBtn = (Button)findViewById(R.id.off);
         mDiscoverBtn = (Button)findViewById(R.id.discover);
         mListPairedDevicesBtn = (Button)findViewById(R.id.PairedBtn);
+        mSendMsg = (Button)findViewById(R.id.sendmsg);
+        msgText = (EditText)findViewById(R.id.messageText);
 
 
         mBTArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
@@ -102,14 +107,17 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
 
-            /*
-            mLED1.setOnClickListener(new View.OnClickListener(){
+
+            mSendMsg.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v){
-                    if(mConnectedThread != null) //First check to make sure thread created
-                        mConnectedThread.write("1");
+                    //First check to make sure thread created
+                    if(mConnectedThread != null) {
+                        String input = msgText.getText().toString();
+                        mConnectedThread.write(input);
+                    }
                 }
-            });*/
+            });
 
 
             mScanBtn.setOnClickListener(new View.OnClickListener() {

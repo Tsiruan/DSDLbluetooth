@@ -121,7 +121,8 @@
         android:layout_height="228dp"
         android:layout_below="@+id/layout_bluetoothStatus"
         android:layout_toRightOf="@+id/buttons"
-        android:choiceMode="singleChoice" />
+        android:choiceMode="singleChoice"
+        android:layout_alignBottom="@+id/buttons" />
 
 
     <Button

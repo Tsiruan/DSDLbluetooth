@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         mDiscoverBtn = (Button)findViewById(R.id.discover);
         mListPairedDevicesBtn = (Button)findViewById(R.id.PairedBtn);
 
+
         mBTArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         mBTAdapter = BluetoothAdapter.getDefaultAdapter(); // get a handle on the bluetooth radio
 
@@ -231,6 +232,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
+            mBTAdapter.cancelDiscovery();
+
             mBluetoothStatus.setText("Connecting...");
             // Get the device MAC address, which is the last 17 chars in the View
             String info = ((TextView) v).getText().toString();
@@ -248,13 +251,18 @@ public class MainActivity extends AppCompatActivity {
                     // create bluetooth socket
                     try {
                         mBTSocket = createBluetoothSocket(device);
+                        System.out.println("create socket...");
+                        if (mBTSocket == null) {
+                            System.out.println("socket is null");
+                        }
                     } catch (IOException e) {
                         fail = true;
-                        Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_SHORT).show();
+                        System.out.println("Socket creation failed");
                     }
                     // Establish the Bluetooth socket connection.
                     try {
                         mBTSocket.connect();
+                        System.out.println("connecting...");
                     } catch (IOException e) {
                         try {
                             fail = true;
@@ -263,13 +271,13 @@ public class MainActivity extends AppCompatActivity {
                                     .sendToTarget();
                         } catch (IOException e2) {
                             //insert code to deal with this
-                            Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_SHORT).show();
+                            System.out.println("Socket creation failed");
                         }
                     }
                     if(fail == false) {
                         mConnectedThread = new ConnectedThread(mBTSocket);
                         mConnectedThread.start();
-                        Toast.makeText(getBaseContext(), "Connection established", Toast.LENGTH_SHORT).show();
+                        System.out.println("Connection established");
 
                         mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, name)
                                 .sendToTarget();
@@ -283,7 +291,8 @@ public class MainActivity extends AppCompatActivity {
         BluetoothSocket tmp = null;
 
         try {
-            tmp = device.createRfcommSocketToServiceRecord(BTMODULEUUID);
+            System.out.println(UUID.fromString("94f39d29-7d6d-437d-973b-fba39e49d4ee"));
+            tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("94f39d29-7d6d-437d-973b-fba39e49d4ee"));
             //creates secure outgoing connection with BT device using UUID
         } catch (IOException e) {
             Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_SHORT).show();

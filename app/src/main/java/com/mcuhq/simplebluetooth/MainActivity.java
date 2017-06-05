@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ToggleButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.EditText;
@@ -32,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
     // GUI Components
     private TextView mBluetoothStatus;
     private TextView mReadBuffer;
-    private Button mScanBtn;
-    private Button mOffBtn;
+    private ToggleButton mBTBtn;
+    private Button mVisibleBtn;
     private Button mListPairedDevicesBtn;
     private Button mDiscoverBtn;
     private Button mSendMsg;
@@ -63,8 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
         mBluetoothStatus = (TextView)findViewById(R.id.bluetoothStatus);
         mReadBuffer = (TextView) findViewById(R.id.readBuffer);
-        mScanBtn = (Button)findViewById(R.id.scan);
-        mOffBtn = (Button)findViewById(R.id.off);
+        mBTBtn = (ToggleButton) findViewById(R.id.onoff);
+        mVisibleBtn = (Button)findViewById(R.id.visible);
         mDiscoverBtn = (Button)findViewById(R.id.discover);
         mListPairedDevicesBtn = (Button)findViewById(R.id.PairedBtn);
         mSendMsg = (Button)findViewById(R.id.sendmsg);
@@ -115,22 +116,28 @@ public class MainActivity extends AppCompatActivity {
                     if(mConnectedThread != null) {
                         String input = msgText.getText().toString();
                         mConnectedThread.write(input);
+                        msgText.setText("", TextView.BufferType.EDITABLE);
                     }
                 }
             });
 
 
-            mScanBtn.setOnClickListener(new View.OnClickListener() {
+            mBTBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    bluetoothOn(v);
+                    if (mBTBtn.isChecked()) {
+                        bluetoothOn(v);
+                    }
+                    else {
+                        bluetoothOff(v);
+                    }
                 }
             });
 
-            mOffBtn.setOnClickListener(new View.OnClickListener(){
+            mVisibleBtn.setOnClickListener(new View.OnClickListener(){
                 @Override
-                public void onClick(View v){
-                    bluetoothOff(v);
+                public void onClick(View v) {
+                    bluetoothVisble(v);
                 }
             });
 
@@ -156,13 +163,21 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             mBluetoothStatus.setText("Bluetooth enabled");
             Toast.makeText(getApplicationContext(),"Bluetooth turned on",Toast.LENGTH_SHORT).show();
-
-            Intent getVisible = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            startActivityForResult(getVisible, 0);
         }
         else{
             Toast.makeText(getApplicationContext(),"Bluetooth is already on", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void bluetoothOff(View view){
+        mBTAdapter.disable(); // turn off
+        mBluetoothStatus.setText("Bluetooth disabled");
+        Toast.makeText(getApplicationContext(),"Bluetooth turned Off", Toast.LENGTH_SHORT).show();
+    }
+
+    private void bluetoothVisble(View view) {
+        Intent getVisible = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        startActivityForResult(getVisible, 0);
     }
 
     // Enter here after user selects "yes" or "no" to enabling radio
@@ -179,12 +194,6 @@ public class MainActivity extends AppCompatActivity {
             else
                 mBluetoothStatus.setText("Disabled");
         }
-    }
-
-    private void bluetoothOff(View view){
-        mBTAdapter.disable(); // turn off
-        mBluetoothStatus.setText("Bluetooth disabled");
-        Toast.makeText(getApplicationContext(),"Bluetooth turned Off", Toast.LENGTH_SHORT).show();
     }
 
     private void discover(View view){
@@ -343,8 +352,8 @@ public class MainActivity extends AppCompatActivity {
                         SystemClock.sleep(100);
                         mmInStream.read(buffer);
                     }
-                    // Send the obtained bytes to the UI activity
 
+                    // Send the obtained bytes to the UI activity
                     mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
                             .sendToTarget();
                 } catch (IOException e) {

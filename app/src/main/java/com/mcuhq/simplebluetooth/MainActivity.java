@@ -15,7 +15,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private Set<BluetoothDevice> mPairedDevices;
     private ArrayAdapter<String> mBTArrayAdapter;
     private ListView mDevicesListView;
-    private CheckBox mLED1;
 
     private Handler mHandler; // Our main handler that will receive callback notifications
     private ConnectedThread mConnectedThread; // bluetooth background worker thread to send and receive data
@@ -66,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
         mOffBtn = (Button)findViewById(R.id.off);
         mDiscoverBtn = (Button)findViewById(R.id.discover);
         mListPairedDevicesBtn = (Button)findViewById(R.id.PairedBtn);
-        mLED1 = (CheckBox)findViewById(R.id.checkboxLED1);
 
         mBTArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1);
         mBTAdapter = BluetoothAdapter.getDefaultAdapter(); // get a handle on the bluetooth radio
@@ -74,8 +71,6 @@ public class MainActivity extends AppCompatActivity {
         mDevicesListView = (ListView)findViewById(R.id.devicesListView);
         mDevicesListView.setAdapter(mBTArrayAdapter); // assign model to view
         mDevicesListView.setOnItemClickListener(mDeviceClickListener);
-
-
 
 
         mHandler = new Handler(){
@@ -106,13 +101,14 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
 
+            /*
             mLED1.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v){
                     if(mConnectedThread != null) //First check to make sure thread created
                         mConnectedThread.write("1");
                 }
-            });
+            });*/
 
 
             mScanBtn.setOnClickListener(new View.OnClickListener() {
@@ -152,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
             mBluetoothStatus.setText("Bluetooth enabled");
             Toast.makeText(getApplicationContext(),"Bluetooth turned on",Toast.LENGTH_SHORT).show();
 
+            Intent getVisible = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            startActivityForResult(getVisible, 0);
         }
         else{
             Toast.makeText(getApplicationContext(),"Bluetooth is already on", Toast.LENGTH_SHORT).show();
@@ -247,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
 
                     BluetoothDevice device = mBTAdapter.getRemoteDevice(address);
 
+                    // create bluetooth socket
                     try {
                         mBTSocket = createBluetoothSocket(device);
                     } catch (IOException e) {
@@ -270,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
                     if(fail == false) {
                         mConnectedThread = new ConnectedThread(mBTSocket);
                         mConnectedThread.start();
+                        Toast.makeText(getBaseContext(), "Connection established", Toast.LENGTH_SHORT).show();
 
                         mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, name)
                                 .sendToTarget();
@@ -280,8 +280,16 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
-        return  device.createRfcommSocketToServiceRecord(BTMODULEUUID);
-        //creates secure outgoing connection with BT device using UUID
+        BluetoothSocket tmp = null;
+
+        try {
+            tmp = device.createRfcommSocketToServiceRecord(BTMODULEUUID);
+            //creates secure outgoing connection with BT device using UUID
+        } catch (IOException e) {
+            Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_SHORT).show();
+        }
+
+        return tmp;
     }
 
     private class ConnectedThread extends Thread {
@@ -342,19 +350,18 @@ public class MainActivity extends AppCompatActivity {
                 mmSocket.close();
             } catch (IOException e) { }
         }
+
+
     }
 
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-
-
-
-
-
-
-
-
-
+        // unregister the ACTION_FOUND receiver.
+        unregisterReceiver(blReceiver);
+    }
 
 }

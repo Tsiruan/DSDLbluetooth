@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -89,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
+                    System.out.println("read message: " + readMessage);
                     mReadBuffer.setText(readMessage);
                 }
 
@@ -171,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void bluetoothOff(View view){
         mBTAdapter.disable(); // turn off
+        mBTArrayAdapter.clear();
         mBluetoothStatus.setText("Bluetooth disabled");
         Toast.makeText(getApplicationContext(),"Bluetooth turned Off", Toast.LENGTH_SHORT).show();
     }
@@ -230,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void listPairedDevices(View view){
         mPairedDevices = mBTAdapter.getBondedDevices();
+        mBTArrayAdapter.clear();
         if(mBTAdapter.isEnabled()) {
             // put it's one to the adapter
             for (BluetoothDevice device : mPairedDevices)
@@ -345,13 +347,10 @@ public class MainActivity extends AppCompatActivity {
 
             // Keep listening to the InputStream until an exception occurs
             while (true) {
+                System.out.println("thread running");
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
-                    if(bytes != 0) {
-                        SystemClock.sleep(100);
-                        mmInStream.read(buffer);
-                    }
 
                     // Send the obtained bytes to the UI activity
                     mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
@@ -387,7 +386,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
 
         // unregister the ACTION_FOUND receiver.
-        unregisterReceiver(blReceiver);
+        //unregisterReceiver(blReceiver);
     }
 
 }

@@ -27,6 +27,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Set;
 import java.util.UUID;
 
+
+
+
+
 public class MainActivity extends AppCompatActivity {
 
     // GUI Components
@@ -294,9 +298,11 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     if(fail == false) {
+                        System.out.println("Connection established");
+
                         mConnectedThread = new ConnectedThread(mBTSocket);
                         mConnectedThread.start();
-                        System.out.println("Connection established");
+                        mConnectedThread.write("Hello_Pi|user_a");
 
                         mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, name)
                                 .sendToTarget();
@@ -342,8 +348,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void run() {
-            byte[] buffer = new byte[1024];  // buffer store for the stream
+            byte[] buffer = new byte[4096];  // buffer store for the stream
             int bytes; // bytes returned from read()
+
 
             // Keep listening to the InputStream until an exception occurs
             while (true) {
@@ -390,3 +397,4 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
+
